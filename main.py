@@ -1,3 +1,4 @@
+import pandas as pd
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -30,6 +31,11 @@ def food():
             'jenis_kelamin': jenis_kelamin,
             'tinggi_badan': tinggi_badan
         }})
+
+@app.route("/api/foods/list",methods=['GET'])
+def food_list():
+    df = pd.read_csv('nutrition.csv')
+    return df.to_json()
 
 if __name__ == '__main__':
     app.run(debug=True, port=os.getenv("PORT", default=5000))
