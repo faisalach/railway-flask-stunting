@@ -1,11 +1,11 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
-
-# Contoh dataset makanan
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 # Memuat dataset dari file CSV
-df = pd.read_csv('nutrition.csv')  
+df = pd.read_csv('nutrition.csv')
 
 # Normalisasi atribut
 scaler = MinMaxScaler()
@@ -14,10 +14,13 @@ df_normalized = pd.DataFrame(scaled_features, columns=['calories', 'proteins', '
 df_normalized['name'] = df['name']  # Menambahkan nama makanan ke dataframe hasil normalisasi
 
 
-# Menghitung cosine similarity matrix
-cosine_sim = cosine_similarity(df_normalized[['calories', 'proteins', 'fat', 'carbohydrate']])
+# Memisahkan dataset menjadi training dan testing
+train_df, test_df = train_test_split(df_normalized, test_size=0.2, random_state=42)
 
-def recommend_foods(input_ids):
+# Menghitung cosine similarity matrix untuk training set
+cosine_sim = cosine_similarity(train_df[['calories', 'proteins', 'fat', 'carbohydrate']])
+
+def recommend_foods(input_ids, cosine_sim):
     recommended_food = []
 
     for id in input_ids:
@@ -25,31 +28,37 @@ def recommend_foods(input_ids):
         sim_scores = list(enumerate(cosine_sim[index]))  # Mendapatkan similarity scores dari makanan yang lain
 
         sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)  # Mengurutkan berdasarkan similarity score
-        sim_scores = sim_scores[1:4]  # Mengambil 3 makanan teratas yang memiliki similarity tertinggi
+        sim_scores = sim_scores[1:3]  # Mengambil 3 makanan teratas yang memiliki similarity tertinggi
 
         food_indices = [i[0] for i in sim_scores]  # Mengambil index dari makanan yang direkomendasikan
         recommended_food.extend(df['name'].iloc[food_indices].values)  # Menambahkan nama makanan yang direkomendasikan
 
     return recommended_food
 
-# Contoh inputan id makanan yang sering dimakan
-""" input_ids = [2, 30]
-
-# Mendapatkan rekomendasi makanan
-recommendations = recommend_foods(input_ids)
-print("Rekomendasi Makanan:")
-for food in recommendations:
-    print(food) """
-
-def calculate_accuracy(input_ids, recommendations):
+def evaluate_model(input_ids, recommendations):
     liked_food = set([df[df['id'] == id]['name'].values[0] for id in input_ids])
     recommended_food = set(recommendations)
 
-    intersection = liked_food.intersection(recommended_food)
-    accuracy = len(intersection) / len(recommended_food) * 100
+    # Menghitung metrik
+    accuracy = len(liked_food) / len(recommended_food) * 100
+    precision = len(liked_food) / len(recommended_food) * 100
+    recall = len(liked_food) / len(liked_food) * 100
+    f1 = 2 * (precision * recall) / (precision + recall)
 
-    return accuracy
+    return accuracy, precision, recall, f1
 
-# Menghitung presentase keakuratan
-""" accuracy = calculate_accuracy(input_ids, recommendations)
-print(f"Presentase keakuratan: {accuracy:.2f}%") """
+""" # Contoh inputan id makanan yang sering dimakan
+input_ids = [2,30, 55,77,29,10,39,59]
+
+# Mendapatkan rekomendasi makanan dari model
+recommendations = recommend_foods(input_ids, cosine_sim)
+
+# Evaluasi model
+accuracy, precision, recall, f1 = evaluate_model(input_ids, recommendations)
+
+print(recommendations)
+print(f"Accuracy: {accuracy:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+print(f"F1 Score: {f1:.2f}")
+ """
