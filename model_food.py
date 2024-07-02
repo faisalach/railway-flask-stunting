@@ -20,7 +20,7 @@ train_df, test_df = train_test_split(df_normalized, test_size=0.2, random_state=
 # Menghitung cosine similarity matrix untuk training set
 cosine_sim = cosine_similarity(train_df[['calories', 'proteins', 'fat', 'carbohydrate']])
 
-def recommend_foods(input_ids, cosine_sim):
+def recommend_foods(input_ids):
     recommended_food = []
 
     for id in input_ids:
@@ -57,8 +57,8 @@ recommendations = recommend_foods(input_ids, cosine_sim)
 accuracy, precision, recall, f1 = evaluate_model(input_ids, recommendations)
 
 print(recommendations)
-print(f"Accuracy: {accuracy:.2f}")
-print(f"Precision: {precision:.2f}")
-print(f"Recall: {recall:.2f}")
-print(f"F1 Score: {f1:.2f}")
+print(f"Accuracy: {accuracy:.2f}") // 53.33
+print(f"Precision: {precision:.2f}") // 53.33
+print(f"Recall: {recall:.2f}") // 100
+print(f"F1 Score: {f1:.2f}") // 69.57
  """
